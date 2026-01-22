@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopEase | Online Shopping</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Segoe UI,Arial,sans-serif;background:#f1f3f6;color:#212121}
+
+/* HEADER */
+header{background:#2874f0;color:#fff;padding:15px;position:sticky;top:0;z-index:10}
+.header{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+.logo{font-size:22px;font-weight:700}
+.search{flex:1}
+.search input{width:100%;padding:10px;border:none;border-radius:4px}
+nav a{color:#fff;margin-left:15px;text-decoration:none;font-weight:500}
+.badge{background:#ff6161;padding:3px 8px;border-radius:20px;font-size:12px}
+
+/* LAYOUT */
+.container{max-width:1400px;margin:auto;padding:25px}
+.controls{display:flex;gap:15px;flex-wrap:wrap;margin-bottom:20px}
+select{padding:8px;border-radius:4px;border:1px solid #ccc}
+
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.card{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);padding:15px;display:flex;flex-direction:column}
+.card img{width:100%;height:180px;object-fit:cover;border-radius:6px}
+.card h3{font-size:15px;margin:8px 0}
+.price{font-weight:700;color:#388e3c}
+.old{color:#878787;text-decoration:line-through;font-size:13px;margin-left:5px}
+.btn{margin-top:auto;padding:10px;border:none;background:#ff9f00;font-weight:600;border-radius:4px;cursor:pointer}
+.btn:hover{opacity:.9}
+
+/* CART */
+.cart{background:#fff;padding:20px;border-radius:8px;max-width:700px;margin:auto}
+.cart-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #ddd}
+.remove{background:#ff6161;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12px}
+
+/* CONTACT */
+.contact{background:#fff;padding:30px;border-radius:8px;text-align:center}
+footer{background:#172337;color:#fff;text-align:center;padding:20px;margin-top:40px}
+
+/* TOP SUCCESS MESSAGE */
+.toast{
+position:fixed;
+top:0;
+left:0;
+right:0;
+background:#388e3c;
+color:#fff;
+text-align:center;
+padding:12px;
+font-size:14px;
+display:none;
+z-index:9999;
+}
+
+@media(max-width:600px){
+.header{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+
+<body>
+
+<!-- SUCCESS MESSAGE -->
+<div class="toast" id="toast">Item added to cart successfully ✅</div>
+
+<header>
+  <div class="header">
+    <div class="logo">ShopEase</div>
+    <div class="search">
+      <input type="text" placeholder="Search for products, brands and more">
+    </div>
+    <nav>
+      <a href="#products">Products</a>
+      <a href="#cart">Cart <span class="badge" id="count">0</span></a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<!-- PRODUCTS -->
+<section class="container" id="products">
+  <h2>Top Deals</h2>
+
+  <div class="controls">
+    <select id="category" onchange="filterProducts()">
+      <option value="all">All Categories</option>
+      <option value="electronics">Electronics</option>
+      <option value="fashion">Fashion</option>
+      <option value="accessories">Accessories</option>
+    </select>
+
+    <select id="sort" onchange="sortProducts()">
+      <option value="default">Sort By</option>
+      <option value="low">Price: Low to High</option>
+      <option value="high">Price: High to Low</option>
+    </select>
+  </div>
+
+  <div class="products" id="productList"></div>
+</section>
+
+<!-- CART -->
+<section class="container" id="cart">
+  <h2>Your Cart</h2>
+  <div class="cart" id="cartItems">
+    <p>No items added yet.</p>
+  </div>
+  <h3 style="text-align:center;margin-top:15px">
+    Total: ₹<span id="total">0</span>
+  </h3>
+</section>
+
+<!-- CONTACT -->
+<section class="container" id="contact">
+  <h2>Contact Us</h2>
+  <div class="contact">
+    <p><strong>Email:</strong> support@shopease.com</p>
+    <p><strong>Phone:</strong> +91 98765 43210</p>
+    <p><strong>Address:</strong> Bengaluru, India</p>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 ShopEase | Capstone E-Commerce Project</p>
+</footer>
+
+<script>
+const products=[
+{name:"Laptop",price:55000,old:65000,cat:"electronics",img:"https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800"},
+{name:"Smartphone",price:24999,old:29999,cat:"electronics",img:"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800"},
+{name:"Camera",price:44999,old:52000,cat:"electronics",img:"https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800"},
+{name:"Smart Watch",price:7999,old:12000,cat:"electronics",img:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"},
+{name:"Headphones",price:2999,old:4999,cat:"accessories",img:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800"},
+{name:"Sports Shoes",price:3499,old:5999,cat:"fashion",img:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800"},
+{name:"Casual Shoes",price:2799,old:3999,cat:"fashion",img:"https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800"},
+{name:"T-Shirt",price:799,old:1499,cat:"fashion",img:"https://images.unsplash.com/photo-1520975916090-3105956dac38?w=800"},
+{name:"Wireless Earbuds",price:3999,old:6999,cat:"accessories",img:"https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800"}
+];
+
+let cart=[],total=0,count=0;
+
+function display(list){
+  const p=document.getElementById("productList");
+  p.innerHTML="";
+  list.forEach(i=>{
+    p.innerHTML+=`
+    <div class="card">
+      <img loading="lazy" src="${i.img}">
+      <h3>${i.name}</h3>
+      <p><span class="price">₹${i.price}</span> <span class="old">₹${i.old}</span></p>
+      <button class="btn" onclick="add('${i.name}',${i.price})">Add to Cart</button>
+    </div>`;
+  });
+}
+
+function add(name,price){
+  cart.push({name,price});
+  total+=price;
+  count++;
+  update();
+  showToast("Item added to cart successfully ✅");
+}
+
+function removeItem(index){
+  total-=cart[index].price;
+  cart.splice(index,1);
+  count--;
+  update();
+  showToast("Item removed from cart ❌");
+}
+
+function update(){
+  document.getElementById("count").innerText=count;
+  const c=document.getElementById("cartItems");
+  c.innerHTML="";
+  if(cart.length===0){
+    c.innerHTML="<p>No items added yet.</p>";
+  }else{
+    cart.forEach((i,idx)=>{
+      c.innerHTML+=`
+      <div class="cart-item">
+        <span>${i.name} - ₹${i.price}</span>
+        <button class="remove" onclick="removeItem(${idx})">Remove</button>
+      </div>`;
+    });
+  }
+  document.getElementById("total").innerText=total;
+}
+
+function filterProducts(){
+  const v=document.getElementById("category").value;
+  display(v==="all"?products:products.filter(p=>p.cat===v));
+}
+
+function sortProducts(){
+  const v=document.getElementById("sort").value;
+  let sorted=[...products];
+  if(v==="low")sorted.sort((a,b)=>a.price-b.price);
+  if(v==="high")sorted.sort((a,b)=>b.price-a.price);
+  display(sorted);
+}
+
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.innerText=msg;
+  t.style.display="block";
+  setTimeout(()=>{t.style.display="none"},2000);
+}
+
+display(products);
+</script>
+
+</body>
+</html>
